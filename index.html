@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Kuis Burung Hantu</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--ink:#2b2350;--purple:#6c4cf1;--pink:#ff5fa2;--yellow:#ffc933;--green:#2ecc8f;--red:#ff5b5b;--bg1:#3b2a8f;--bg2:#ff7eb3}
+body{font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;color:var(--ink);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:12px;background:linear-gradient(160deg,var(--bg1),var(--bg2));background-attachment:fixed}
+.wrap{width:100%;max-width:820px}
+.card{background:#fff;border-radius:22px;padding:18px;box-shadow:0 14px 40px rgba(20,10,70,.35)}
+.hidden{display:none!important}
+h1{font-size:clamp(28px,6vw,44px);line-height:1.1;margin-bottom:10px}
+h1 span{color:var(--purple)}
+p{line-height:1.5}
+.center{text-align:center}
+.btn{border:0;cursor:pointer;font:inherit;font-weight:700;font-size:18px;padding:13px 28px;border-radius:50px;color:#fff;background:linear-gradient(135deg,var(--purple),var(--pink));box-shadow:0 6px 0 #4a2fb8;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #4a2fb8}
+.btn:focus-visible,.opt:focus-visible,.pad:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.owlhero{font-size:90px;margin:8px 0}
+.rules{display:inline-block;text-align:left;margin:12px 0 20px;background:#f3efff;border-radius:14px;padding:12px 18px}
+.rules li{margin:4px 0 4px 18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-weight:700}
+.pill{background:#f3efff;border-radius:50px;padding:6px 14px;white-space:nowrap}
+.bar{flex:1;height:12px;background:#e6e0ff;border-radius:10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--yellow),var(--pink));transition:width .4s}
+#q{font-size:clamp(18px,4.2vw,24px);font-weight:700;margin:8px 0 12px;min-height:58px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.opt{display:flex;align-items:center;gap:10px;text-align:left;border:3px solid #e6e0ff;background:#fff;border-radius:14px;padding:10px;font:inherit;font-weight:600;color:var(--ink);cursor:pointer}
+.opt b{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:#fff}
+.opt.ok{border-color:var(--green);background:#e4fbf1}
+.opt.no{border-color:var(--red);background:#ffe9e9}
+.opt:disabled{cursor:default}
+canvas{width:100%;display:block;border-radius:16px;touch-action:none;background:#8fd3ff}
+.pads{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px}
+.pad{width:72px;height:60px;border:0;border-radius:16px;font-size:26px;color:#fff;background:var(--purple);box-shadow:0 5px 0 #4a2fb8;touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.pad:active{transform:translateY(3px);box-shadow:0 2px 0 #4a2fb8}
+.pad.j{background:var(--pink);box-shadow:0 5px 0 #c23274;width:110px}
+.mid{flex:1;text-align:center;min-height:50px}
+#fb{font-weight:700;margin-bottom:6px;min-height:24px}
+.big{font-size:70px;font-weight:800;color:var(--purple);margin:6px 0}
+@media(max-width:560px){.opts{grid-template-columns:1fr}.pad{width:64px}.pad.j{width:96px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="start" class="card center">
+  <div class="owlhero">🦉</div>
+  <h1>Kuis <span>Burung Hantu</span></h1>
+  <p>Bantu si burung hantu menjawab 20 pertanyaan pengetahuan umum!</p>
+  <ul class="rules">
+    <li>Gerakkan burung hantu dengan tombol ◀ ▶ (atau tombol panah / A D).</li>
+    <li>Lompat dengan tombol ⬆ (atau spasi / W).</li>
+    <li>Sentuh balok A, B, C, atau D untuk memilih jawaban.</li>
+    <li>Jawaban benar = 5 poin. Skor maksimal 100.</li>
+  </ul><br>
+  <button class="btn" id="btnStart">Mulai</button>
+</section>
+
+<section id="game" class="card hidden">
+  <div class="top">
+    <span class="pill" id="num">1/20</span>
+    <div class="bar"><i id="prog"></i></div>
+    <span class="pill">⭐ <span id="score">0</span></span>
+  </div>
+  <div id="q"></div>
+  <div class="opts" id="opts"></div>
+  <canvas id="cv" width="800" height="300"></canvas>
+  <div class="pads">
+    <button class="pad" id="bl" aria-label="Kiri">◀</button>
+    <div class="mid">
+      <div id="fb"></div>
+      <button class="btn hidden" id="btnNext">Lanjut</button>
+    </div>
+    <button class="pad j" id="bj" aria-label="Lompat">⬆</button>
+    <button class="pad" id="br" aria-label="Kanan">▶</button>
+  </div>
+</section>
+
+<section id="end" class="card center hidden">
+  <div class="owlhero" id="endIcon">🏆</div>
+  <h1>Permainan Selesai!</h1>
+  <p id="endMsg"></p>
+  <div class="big"><span id="final">0</span>/100</div>
+  <p id="endDet" style="margin-bottom:20px"></p>
+  <button class="btn" id="btnAgain">Ulangi Permainan</button>
+</section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+// [pertanyaan, jawaban benar, salah1, salah2, salah3]
+var Q=[
+["Planet apakah yang paling dekat dengan Matahari?","Merkurius","Venus","Mars","Bumi"],
+["Hewan manakah yang paling cepat berlari di darat?","Cheetah","Singa","Kuda","Serigala"],
+["Apa ibu kota negara Jepang?","Tokyo","Kyoto","Osaka","Seoul"],
+["Apa rumus kimia untuk air?","H2O","CO2","O2","NaCl"],
+["Samudra manakah yang paling luas di dunia?","Pasifik","Atlantik","Hindia","Arktik"],
+["Siapa penemu telepon?","Alexander Graham Bell","Thomas Edison","Nikola Tesla","Guglielmo Marconi"],
+["Gunung tertinggi di dunia adalah...","Everest","K2","Kilimanjaro","Fuji"],
+["Berapa jumlah benua di Bumi?","7","5","6","8"],
+["Siapa pencipta lagu Indonesia Raya?","W.R. Supratman","Ismail Marzuki","C. Simanjuntak","Kusbini"],
+["Indonesia memproklamasikan kemerdekaan pada tahun...","1945","1944","1946","1949"],
+["Organ tubuh yang memompa darah adalah...","Jantung","Paru-paru","Hati","Ginjal"],
+["Apa mata uang negara Jepang?","Yen","Won","Yuan","Ringgit"],
+["Hewan mamalia terbesar di dunia adalah...","Paus biru","Gajah","Jerapah","Hiu paus"],
+["Gas apa yang kita hirup untuk bernapas?","Oksigen","Nitrogen","Hidrogen","Helium"],
+["Apa ibu kota negara Australia?","Canberra","Sydney","Melbourne","Perth"],
+["Candi Buddha terbesar di Indonesia adalah...","Borobudur","Prambanan","Mendut","Sewu"],
+["Berapakah hasil dari 12 × 12?","144","124","132","154"],
+["Campuran warna biru dan kuning menghasilkan warna...","Hijau","Ungu","Oranye","Cokelat"],
+["Bahasa resmi negara Brasil adalah...","Portugis","Spanyol","Inggris","Prancis"],
+["Planet manakah yang dijuluki Planet Merah?","Mars","Jupiter","Saturnus","Venus"]
+];
+var COL=["#ff5fa2","#ffa31a","#2ea8ff","#8c5cf6"],LET=["A","B","C","D"];
+var W=800,H=300,G=262;
+var $=function(id){return document.getElementById(id)};
+var cv=$("cv"),ctx=cv.getContext("2d");
+var idx=0,score=0,state="idle",ans=0,opts=[],picked=-1;
+var keys={l:0,r:0,j:0};
+var owl={x:60,y:G-52,w:44,h:52,vx:0,vy:0,dir:1,on:true,t:0};
+var blocks=[70,250,430,610].map(function(x,i){return{x:x,y:150,w:110,h:36,c:COL[i],s:0}});
+var clouds=[{x:100,y:40,s:1},{x:420,y:70,s:.8},{x:680,y:35,s:1.1}];
+
+function show(id){["start","game","end"].forEach(function(s){$(s).classList.toggle("hidden",s!==id)})}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+
+function loadQ(){
+  var q=Q[idx];
+  opts=shuffle(q.slice(1));ans=opts.indexOf(q[1]);picked=-1;state="play";
+  $("q").textContent=q[0];
+  $("num").textContent=(idx+1)+"/"+Q.length;
+  $("prog").style.width=(idx/Q.length*100)+"%";
+  $("score").textContent=score;
+  $("fb").textContent="Lompat dan sentuh balok jawaban!";
+  $("btnNext").classList.add("hidden");
+  var box=$("opts");box.innerHTML="";
+  opts.forEach(function(t,i){
+    var b=document.createElement("button");
+    b.className="opt";b.type="button";
+    b.innerHTML='<b style="background:'+COL[i]+'">'+LET[i]+'</b><span></span>';
+    b.lastChild.textContent=t;
+    b.onclick=function(){choose(i)};
+    box.appendChild(b);
+  });
+  blocks.forEach(function(b){b.s=0});
+  owl.x=W/2-22;owl.y=G-owl.h;owl.vx=owl.vy=0;owl.on=true;
+}
+
+function choose(i){
+  if(state!=="play")return;
+  state="done";picked=i;
+  var ok=i===ans;
+  if(ok)score+=5;
+  $("score").textContent=score;
+  var bs=document.querySelectorAll(".opt");
+  bs.forEach(function(b,k){
+    b.disabled=true;
+    if(k===ans)b.classList.add("ok");
+    else if(k===i)b.classList.add("no");
+  });
+  blocks.forEach(function(b,k){b.s=k===ans?1:(k===i?2:0)});
+  $("fb").textContent=ok?"✅ Benar! +5 poin":"❌ Salah. Jawaban: "+LET[ans]+". "+opts[ans];
+  var nx=$("btnNext");
+  nx.textContent=idx===Q.length-1?"Lihat Hasil":"Lanjut";
+  nx.classList.remove("hidden");
+  owl.vx=0;
+}
+
+function next(){
+  if(idx>=Q.length-1){finish();return}
+  idx++;loadQ();
+}
+
+function finish(){
+  $("prog").style.width="100%";
+  var right=score/5;
+  $("final").textContent=score;
+  $("endDet").textContent="Kamu menjawab "+right+" dari "+Q.length+" pertanyaan dengan benar.";
+  var m,ic;
+  if(score>=90){m="Luar biasa! Kamu sepintar burung hantu bijak!";ic="🏆"}
+  else if(score>=70){m="Hebat! Pengetahuanmu sudah bagus.";ic="🎉"}
+  else if(score>=50){m="Lumayan! Coba lagi untuk skor lebih tinggi.";ic="🦉"}
+  else{m="Jangan menyerah, ayo coba lagi!";ic="📚"}
+  $("endMsg").textContent=m;$("endIcon").textContent=ic;
+  state="idle";show("end");
+}
+
+function start(){idx=0;score=0;show("game");loadQ()}
+
+// ---------- Kontrol ----------
+function key(e,v){
+  var k=e.key.toLowerCase(),used=true;
+  if(k==="arrowleft"||k==="a")keys.l=v;
+  else if(k==="arrowright"||k==="d")keys.r=v;
+  else if(k==="arrowup"||k==="w"||k===" ")keys.j=v;
+  else used=false;
+  if(used&&!$("game").classList.contains("hidden"))e.preventDefault();
+}
+window.addEventListener("keydown",function(e){key(e,1)});
+window.addEventListener("keyup",function(e){key(e,0)});
+function hold(id,k){
+  var b=$(id);
+  var on=function(e){e.preventDefault();keys[k]=1};
+  var off=function(e){e.preventDefault();keys[k]=0};
+  b.addEventListener("pointerdown",on);
+  b.addEventListener("pointerup",off);
+  b.addEventListener("pointerleave",off);
+  b.addEventListener("pointercancel",off);
+  b.addEventListener("contextmenu",function(e){e.preventDefault()});
+}
+hold("bl","l");hold("br","r");hold("bj","j");
+window.addEventListener("blur",function(){keys.l=keys.r=keys.j=0});
+$("btnStart").onclick=start;
+$("btnNext").onclick=next;
+$("btnAgain").onclick=start;
+
+// ---------- Fisika & gambar ----------
+function update(){
+  owl.t++;
+  if(state==="play"){
+    owl.vx=(keys.r-keys.l)*4.2;
+    if(owl.vx)owl.dir=owl.vx>0?1:-1;
+    if(keys.j&&owl.on){owl.vy=-12.8;owl.on=false}
+  }
+  owl.x+=owl.vx;
+  if(owl.x<0)owl.x=0;
+  if(owl.x>W-owl.w)owl.x=W-owl.w;
+  owl.vy+=.62;owl.y+=owl.vy;
+  if(owl.y>=G-owl.h){owl.y=G-owl.h;owl.vy=0;owl.on=true}
+  if(state==="play"){
+    for(var i=0;i<blocks.length;i++){
+      var b=blocks[i];
+      if(owl.x<b.x+b.w&&owl.x+owl.w>b.x&&owl.y<b.y+b.h&&owl.y+owl.h>b.y){choose(i);break}
+    }
+  }
+  clouds.forEach(function(c){c.x+=.15*c.s;if(c.x>W+80)c.x=-80});
+}
+
+function cloud(c){
+  ctx.fillStyle="rgba(255,255,255,.9)";ctx.beginPath();
+  ctx.arc(c.x,c.y,18*c.s,0,7);ctx.arc(c.x+20*c.s,c.y-8*c.s,22*c.s,0,7);ctx.arc(c.x+44*c.s,c.y,18*c.s,0,7);ctx.fill();
+}
+
+function drawOwl(){
+  var cx=owl.x+owl.w/2,cy=owl.y+owl.h/2,walk=owl.on&&Math.abs(owl.vx)>0;
+  var bob=walk?Math.sin(owl.t*.4)*2:0;
+  ctx.save();ctx.translate(cx,cy+bob);ctx.scale(owl.dir,1);
+  var sw=walk?Math.sin(owl.t*.4)*5:0;
+  ctx.fillStyle="#ff9f1c";
+  ctx.beginPath();ctx.ellipse(-9+sw,25,8,4,0,0,7);ctx.ellipse(9-sw,25,8,4,0,0,7);ctx.fill();
+  ctx.fillStyle="#5a3a22";
+  ctx.beginPath();ctx.moveTo(-20,-16);ctx.lineTo(-17,-32);ctx.lineTo(-6,-22);ctx.closePath();
+  ctx.moveTo(20,-16);ctx.lineTo(17,-32);ctx.lineTo(6,-22);ctx.closePath();ctx.fill();
+  ctx.fillStyle="#8a5a35";ctx.beginPath();ctx.ellipse(0,0,23,27,0,0,7);ctx.fill();
+  ctx.fillStyle="#f2d3a5";ctx.beginPath();ctx.ellipse(0,8,14,17,0,0,7);ctx.fill();
+  ctx.strokeStyle="#c79a68";ctx.lineWidth=2;
+  for(var i=0;i<3;i++){ctx.beginPath();ctx.arc(0,6+i*7,6,.2,Math.PI-.2);ctx.stroke()}
+  var fl=owl.on?0:Math.sin(owl.t*.7)*.6-.5;
+  ctx.fillStyle="#6b4326";
+  ctx.save();ctx.translate(-20,-2);ctx.rotate(fl);ctx.beginPath();ctx.ellipse(-3,6,7,16,.15,0,7);ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(20,-2);ctx.rotate(-fl);ctx.beginPath();ctx.ellipse(3,6,7,16,-.15,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(-9,-10,10,0,7);ctx.arc(9,-10,10,0,7);ctx.fill();
+  ctx.fillStyle="#222";var blink=owl.t%200<6?1:6;
+  ctx.beginPath();ctx.ellipse(-7,-10,5,blink,0,0,7);ctx.ellipse(11,-10,5,blink,0,0,7);ctx.fill();
+  ctx.fillStyle="#ffb703";ctx.beginPath();ctx.moveTo(1,-6);ctx.lineTo(13,-3);ctx.lineTo(1,4);ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+
+function draw(){
+  var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#7cc8ff");g.addColorStop(1,"#d9f1ff");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#ffe066";ctx.beginPath();ctx.arc(740,50,28,0,7);ctx.fill();
+  clouds.forEach(cloud);
+  ctx.fillStyle="#7bd36b";ctx.fillRect(0,G,W,H-G);
+  ctx.fillStyle="#5cb853";ctx.fillRect(0,G,W,8);
+  blocks.forEach(function(b,i){
+    ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(b.x+4,b.y+5,b.w,b.h);
+    ctx.fillStyle=b.s===1?"#2ecc8f":b.s===2?"#ff5b5b":b.c;
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(b.x,b.y,b.w,b.h,10);else ctx.rect(b.x,b.y,b.w,b.h);
+    ctx.fill();
+    ctx.fillStyle="#fff";ctx.font="bold 22px Trebuchet MS,Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(b.s===1?LET[i]+" ✓":b.s===2?LET[i]+" ✗":LET[i],b.x+b.w/2,b.y+b.h/2+1);
+  });
+  drawOwl();
+}
+
+function loop(){
+  if(!$("game").classList.contains("hidden")){update();draw()}
+  requestAnimationFrame(loop);
+}
+draw();loop();
+})();
+</script>
+</body>
+</html>
